@@ -4,7 +4,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-
+ 
 const webpackConfig = {
     entry: {},
     output:{
@@ -17,9 +17,9 @@ const webpackConfig = {
         port: 8082
     },
     module:{
-        loaders:[
+        rules:[
             {
-                test:/\.js?$/,
+                test:/\.(js|jsx)$/,
                 exclude:/node_modules/,
                 loader:'babel-loader',
                 query:{
@@ -27,28 +27,24 @@ const webpackConfig = {
                 }
             },
             {
-                test: /\.(scss|sass|css)$/, 
+                test: /\.(scss|sass|css)$/,
                 loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader"})
             },
             {
-                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                loader: 'url-loader'
-            },
-            {
-                test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-                loader: 'url-loader'
-            },
-            {
-                test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-                loader: 'url-loader'
+                test: /\.tsx?$/,
+                loader: 'ts-loader',
+                exclude: /node_modules/
             }
             
         ]
     },
+    resolve: {
+        extensions: ['.js', '.jsx','.ts','.tsx', '.scss','.json','.css'], //后缀名自动补全
+    },
     plugins: [
         new ExtractTextPlugin("[name]/[name].[chunkhash:6].css"),
         new CleanWebpackPlugin(
-            ['dist'],　 
+            ['dist'],
             {
                 root: __dirname,　　　　　　　　　
                 verbose:  true,        　　　　　　　　　　
@@ -57,11 +53,11 @@ const webpackConfig = {
         )
     ],
 };
-
+ 
 // 获取指定路径下的入口文件
 function getEntries(globPath) {
     const files = glob.sync(globPath),
-      entries = {};
+    entries = {};
     files.forEach(function(filepath) {
         const split = filepath.split('/');
         const name = split[split.length - 2];
@@ -70,17 +66,15 @@ function getEntries(globPath) {
     return entries;
 }
        
-const entries = getEntries('src/**/index.js');
-
+const entries = getEntries('src/pages/**/index.tsx');
 Object.keys(entries).forEach(function(name) {
-   webpackConfig.entry[name] = entries[name];
-   const plugin = new HtmlWebpackPlugin({
+    webpackConfig.entry[name] = entries[name];
+    const plugin = new HtmlWebpackPlugin({
        filename: name + '/' + name + '.html',
        template: './public/index.html',
        inject: true,
        chunks: [name]
-   });
-   webpackConfig.plugins.push(plugin);
+    });
+    webpackConfig.plugins.push(plugin);
 })
-
 module.exports = webpackConfig;
